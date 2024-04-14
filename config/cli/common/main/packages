@@ -50,3 +50,5 @@ vlan
 wget
 wireless-tools
 wpasupplicant
+net-tools
+moreutils
