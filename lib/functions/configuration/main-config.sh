@@ -304,11 +304,14 @@ function do_extra_configuration() {
 	if [[ "$RELEASE" =~ ^(focal|jammy|kinetic|lunar|mantic|noble)$ ]]; then
 		DISTRIBUTION="Ubuntu"
 		DEBOOTSTRAP_SOURCE="gutsy"
+    elif [[ "$RELEASE" =~ ^(kali-rolling)$ ]]; then
+		DISTRIBUTION="kali-rolling"
 	else
 		DISTRIBUTION="Debian"
 		DEBOOTSTRAP_SOURCE="sid"
 	fi
 
+ 	KALI_MIRROR='http.kali.org/'
 	DEBIAN_MIRROR='deb.debian.org/debian'
 	DEBIAN_SECURTY='security.debian.org/'
 	[[ "${ARCH}" == "amd64" ]] &&
@@ -384,6 +387,8 @@ function do_extra_configuration() {
 	APT_MIRROR=$DEBIAN_MIRROR
 	if [[ $DISTRIBUTION == Ubuntu ]]; then
 		APT_MIRROR=$UBUNTU_MIRROR
+  	elif [[$DISTRIBUTION == kali-rolling ]]; then
+   		APT_MIRROR=$KALI_MIRROR
 	fi
 
 	[[ -n "${APT_PROXY_ADDR}" ]] && display_alert "Using custom apt proxy address" "APT_PROXY_ADDR=${APT_PROXY_ADDR}" "info"
