@@ -38,6 +38,11 @@ function install_distribution_specific() {
 		install_artifact_deb_chroot "fake-ubuntu-advantage-tools"
 		truncate --size=0 "${SDCARD}"/etc/apt/apt.conf.d/20apt-esm-hook.conf
 	fi
+ 
+  	elif [[ "$DISTRIBUTION" == kali-rolling ]]; then
+  		# remove security updates repository since it does not exists yet
+		sed '/security/ d' -i "${SDCARD}"/etc/apt/sources.list
+	fi
 
 	# install our base-files package (this replaces the original from Debian/Ubuntu)
 	if [[ "${KEEP_ORIGINAL_OS_RELEASE:-"no"}" != "yes" ]]; then
