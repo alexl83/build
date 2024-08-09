@@ -1,0 +1,20 @@
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index 1313b01dce..6d3b292049 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -220,6 +220,15 @@ int board_init(void)
+ #endif
+ 		}
+ 	}
++
++#if CONFIG_MACH_SUN50I_H616
++	/*
++	 * The bit[16] of register reg[0x03000000] must be zero for the THS
++	 * driver to work properly in the kernel. The BSP u-boot is putting
++	 * the whole register to zero so we are doing the same.
++	 */
++	writel(0x0, SUNXI_SRAMC_BASE);
++
+ #endif /* !CONFIG_ARM64 && !CONFIG_MACH_SUNIV */
+ 
+ 	ret = axp_gpio_init();
