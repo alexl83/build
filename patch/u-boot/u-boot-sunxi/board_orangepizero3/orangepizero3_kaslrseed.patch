@@ -1,0 +1,10 @@
+diff --git a/configs/orangepi_zero3_defconfig b/configs/orangepi_zero3_defconfig
+index 44b7ec7887..9090bd326f 100644
+--- a/configs/orangepi_zero3_defconfig
++++ b/configs/orangepi_zero3_defconfig
+@@ -31,3 +31,5 @@ CONFIG_SPI=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_USB_OHCI_HCD=y
+ CONFIG_USB_MUSB_GADGET=y
++CONFIG_CMD_KASLRSEED=y
++CONFIG_DM_RNG=y

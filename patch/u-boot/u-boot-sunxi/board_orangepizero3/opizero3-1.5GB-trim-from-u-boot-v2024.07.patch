@@ -1,0 +1,80 @@
+diff --git a/arch/arm/include/asm/arch-sunxi/dram.h b/arch/arm/include/asm/arch-sunxi/dram.h
+index 9d21b49241..8dabb80a0a 100644
+--- a/arch/arm/include/asm/arch-sunxi/dram.h
++++ b/arch/arm/include/asm/arch-sunxi/dram.h
+@@ -40,6 +40,8 @@
+ unsigned long sunxi_dram_init(void);
+ void mctl_await_completion(u32 *reg, u32 mask, u32 val);
+ bool mctl_mem_matches(u32 offset);
++bool mctl_mem_matches_top(ulong offset);
+ bool mctl_mem_matches_base(u32 offset, ulong base);
++ulong mctl_mem_address(ulong offset);
+ 
+ #endif /* _SUNXI_DRAM_H */
+diff --git a/arch/arm/mach-sunxi/dram_helpers.c b/arch/arm/mach-sunxi/dram_helpers.c
+index 83dbe4ca98..173f6e5706 100644
+--- a/arch/arm/mach-sunxi/dram_helpers.c
++++ b/arch/arm/mach-sunxi/dram_helpers.c
+@@ -61,4 +61,32 @@ bool mctl_mem_matches(u32 offset)
+ {
+ 	return mctl_mem_matches_base(offset, CFG_SYS_SDRAM_BASE);
+ }
++
++/*
++ * Test if memory at offset matches memory at top of DRAM
++ */
++bool mctl_mem_matches_top(ulong offset)
++{
++	static const unsigned value= 0xaa55aa55;
++
++	/* Take last usable memory address */
++	offset -= sizeof(value);
++	dsb();
++	/* Set zero at last usable memory address */
++	writel(0, (ulong)CFG_SYS_SDRAM_BASE + offset);
++	dsb();
++	/* Set other value at last usable memory address */
++	writel(value, (ulong)CFG_SYS_SDRAM_BASE + offset);
++	dsb();
++	/* Check if the same value is actually observed when reading back */
++	return readl((ulong)CFG_SYS_SDRAM_BASE + offset) == value;
++}
++
++/*
++ * Get memory address at offset of DRAM
++ */
++ulong mctl_mem_address(ulong offset)
++{
++	return (ulong)CFG_SYS_SDRAM_BASE + offset;
++}
+ #endif
+diff --git a/arch/arm/mach-sunxi/dram_sun50i_h616.c b/arch/arm/mach-sunxi/dram_sun50i_h616.c
+index 37c139e0ee..7933373933 100644
+--- a/arch/arm/mach-sunxi/dram_sun50i_h616.c
++++ b/arch/arm/mach-sunxi/dram_sun50i_h616.c
+@@ -1348,9 +1348,24 @@ static void mctl_auto_detect_dram_size(const struct dram_para *para,
+ static unsigned long mctl_calc_size(const struct dram_config *config)
+ {
+ 	u8 width = config->bus_full_width ? 4 : 2;
++	unsigned long size;
+ 
+ 	/* 8 banks */
+-	return (1ULL << (config->cols + config->rows + 3)) * width * config->ranks;
++	size = (1ULL << (config->cols + config->rows + 3)) * width * config->ranks;
++
++	printf("DRAM base address is defined as 0x%lx\n", mctl_mem_address(0));
++	printf("DRAM has %u b/raw, %u b/col, %u B/width, %u #rank and 8 #bank\n",
++	       (unsigned)config->rows, (unsigned)config->cols,
++	       (unsigned)width, (unsigned)config->ranks);
++	printf("DRAM top address must be less than 0x%lx\n", size);
++
++	/* Fix size if last usable memory address is not valid */
++	if (!mctl_mem_matches_top(size)) {
++		size = (size * 3) / 4;
++		printf("DRAM top address must be less than 0x%lx\n", size);
++	}
++
++	return size;
+ }
+ 
+ static const struct dram_para para = {
