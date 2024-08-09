@@ -1,8 +1,8 @@
 diff --git a/board/sunxi/board.c b/board/sunxi/board.c
-index 1313b01dce..6d3b292049 100644
+index 1313b01dce..7a09ab92d1 100644
 --- a/board/sunxi/board.c
 +++ b/board/sunxi/board.c
-@@ -220,6 +220,15 @@ int board_init(void)
+@@ -220,6 +220,16 @@ int board_init(void)
  #endif
  		}
  	}
@@ -15,6 +15,7 @@ index 1313b01dce..6d3b292049 100644
 +	 */
 +	writel(0x0, SUNXI_SRAMC_BASE);
 +
++#endif
  #endif /* !CONFIG_ARM64 && !CONFIG_MACH_SUNIV */
  
  	ret = axp_gpio_init();
